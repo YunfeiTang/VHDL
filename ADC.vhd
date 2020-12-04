@@ -13,7 +13,7 @@ port(
 	scl_out:out std_logic;
 	sda_out:inout std_logic;
 	adc_done:out std_logic;
-	--I2C¶ÁÈ¡µÄÊı¾İ
+	--I2Cè¯»å–çš„æ•°æ®
 	adc_data:inout std_logic_vector(7 downto 0);
 	din:out std_logic;		--data stream to 595
 	sck:out std_logic;		--595 shift clock
@@ -28,7 +28,7 @@ port(
 end entity;
 
 architecture ADC_arch of ADC_I2C is
---³£Á¿¶¨Òå
+--å¸¸é‡å®šä¹‰
 constant CNT_NUM: integer:= 15;
 constant IDLE: integer:= 0;
 constant MAIN: integer:= 1;
@@ -36,7 +36,7 @@ constant START: integer:= 2;
 constant WRITING: integer:= 3;
 constant READING: integer:= 4;
 constant STOP: integer:= 5;
---ĞÅºÅ¶¨Òå
+--ä¿¡å·å®šä¹‰
 signal clk_400khz: std_logic;
 signal cnt_400khz: integer range 0 to 31;
 
@@ -53,10 +53,6 @@ signal cnt_stop: integer range 0 to 7;
 signal state: integer range 0 to 7;
 signal Voltage:integer range 0 to 3300;
 
- -----------------------Signals Declaration-------------------
-
- ---------------------End Signals Declaration-----------------	
- ------------------Constant Table Declaration---------------
  type TwoDim_Array_Int is array(natural range <>) of integer;		--define 2D array
  
  constant digit5:TwoDim_Array_Int(0 to 1):=(10,11);
@@ -95,7 +91,7 @@ signal Voltage:integer range 0 to 3300;
  signal codeP3: std_logic_vector(15 downto 0);
  signal codeP4: std_logic_vector(15 downto 0);
  signal codeP5: std_logic_vector(15 downto 0);
- --signal box: std_logic_vector(17 downto 0);
+
  signal DataOut: integer_number (2 downto 0);--0-255
  signal DataV: integer_number(3 downto 0);--0-3300
  signal tmp: integer range 0 to 99999:=0;
@@ -126,7 +122,7 @@ signal Voltage:integer range 0 to 3300;
 	mode:out integer
  );
  end component ModeCtrller;
- 
+   --component for LCD_display
  component LCD_display is
 		port(
 		reset: in std_logic;
@@ -141,7 +137,6 @@ end  component LCD_display;
 begin
 MC:ModeCtrller PORT MAP (clk_in,rst_n_in,mode_key,mode);
 process(clk_in,rst_n_in)
-
 begin
 	
 	if (clk_in'event and clk_in = '1') then
@@ -155,8 +150,8 @@ begin
 end process;
 
 process(clk_400khz,rst_n_in)
-    variable bcd: std_logic_vector (11 downto 0) ;
-	variable binx : std_logic_vector (7 downto 0) ;
+variable bcd: std_logic_vector (11 downto 0) ;
+variable binx : std_logic_vector (7 downto 0) ;
 begin
 	if (clk_400khz'event and clk_400khz = '1') then
 		if (rst_n_in = '0') then
@@ -186,39 +181,39 @@ begin
 					state <= MAIN;
 				when MAIN =>
 					if(cnt_main >= 6) then
-						cnt_main <= 6;  --¶ÔMAINÖĞµÄ×Ó×´Ì¬Ö´ĞĞ¿ØÖÆcnt_main
+						cnt_main <= 6;  --å¯¹MAINä¸­çš„å­çŠ¶æ€æ‰§è¡Œæ§åˆ¶cnt_main
 					else 
 						cnt_main <= cnt_main + 1;
 					end if;
 					case(cnt_main) is
-						when 0 => state <= START; 	--I2CÍ¨ĞÅÊ±ĞòÖĞµÄSTART
-						when 1 => data_wr <= x"90"; state <= WRITING; 	--A0,A1,A2¶¼½ÓÁËGND£¬Ğ´µØÖ·Îª8'h90
-						when 2 => data_wr <= x"00"; state <= WRITING; 	--control byteÎª8'h00£¬²ÉÓÃ4Í¨µÀADCÖĞµÄÍ¨µÀ0
-						when 3 => state <= STOP;	--I2CÍ¨ĞÅÊ±ĞòÖĞµÄSTART
-						when 4 => state <= START; 	--I2CÍ¨ĞÅÊ±ĞòÖĞµÄSTOP
-						when 5 => data_wr <= x"91"; state <= WRITING; 	--A0 A1 A2¶¼½ÓÁËGND£¬¶ÁµØÖ·Îª8'h91
-						when 6 => state <= READING; adc_done <= '0'; --¶ÁÈ¡ADCµÄ²ÉÑùÊı¾İ
-						when 7 => state <= STOP; adc_done <= '1'; 	--I2CÍ¨ĞÅÊ±ĞòÖĞµÄSTOP£¬¶ÁÈ¡Íê³É±êÖ¾
-						when 8 => state <= MAIN; 	--Ô¤Áô×´Ì¬£¬²»Ö´ĞĞ
-						when others => state <= IDLE;	--Èç¹û³ÌĞòÊ§¿Ø£¬½øÈëIDLE×Ô¸´Î»×´Ì¬
+						when 0 => state <= START; 	--I2Cé€šä¿¡æ—¶åºä¸­çš„START
+						when 1 => data_wr <= x"90"; state <= WRITING; 	--A0,A1,A2éƒ½æ¥äº†GNDï¼Œå†™åœ°å€ä¸º8'h90
+						when 2 => data_wr <= x"00"; state <= WRITING; 	--control byteä¸º8'h00ï¼Œé‡‡ç”¨4é€šé“ADCä¸­çš„é€šé“0
+						when 3 => state <= STOP;	--I2Cé€šä¿¡æ—¶åºä¸­çš„START
+						when 4 => state <= START; 	--I2Cé€šä¿¡æ—¶åºä¸­çš„STOP
+						when 5 => data_wr <= x"91"; state <= WRITING; 	--A0 A1 A2éƒ½æ¥äº†GNDï¼Œè¯»åœ°å€ä¸º8'h91
+						when 6 => state <= READING; adc_done <= '0'; --è¯»å–ADCçš„é‡‡æ ·æ•°æ®
+						when 7 => state <= STOP; adc_done <= '1'; 	--I2Cé€šä¿¡æ—¶åºä¸­çš„STOPï¼Œè¯»å–å®Œæˆæ ‡å¿—
+						when 8 => state <= MAIN; 	--é¢„ç•™çŠ¶æ€ï¼Œä¸æ‰§è¡Œ
+						when others => state <= IDLE;	--å¦‚æœç¨‹åºå¤±æ§ï¼Œè¿›å…¥IDLEè‡ªå¤ä½çŠ¶æ€
 					end case;
-				when START =>   --I2CÍ¨ĞÅÊ±ĞòÖĞµÄÆğÊ¼START
+				when START =>   --I2Cé€šä¿¡æ—¶åºä¸­çš„èµ·å§‹START
 					if(cnt_start >= 5) then
-						cnt_start <= 0;	--¶ÔSTARTÖĞµÄ×Ó×´Ì¬Ö´ĞĞ¿ØÖÆcnt_start
+						cnt_start <= 0;	--å¯¹STARTä¸­çš„å­çŠ¶æ€æ‰§è¡Œæ§åˆ¶cnt_start
 					else 
 						cnt_start <= cnt_start + 1;
 					end if;
 					case(cnt_start) is
-						when 0 => sda_out_r <= '1'; scl_out_r <= '1';	--½«SCLºÍSDAÀ­¸ß£¬±£³Ö4.7usÒÔÉÏ
-						when 1 => sda_out_r <= '1'; scl_out_r <= '1'; 	--clk_400khzÃ¿¸öÖÜÆÚ2.5us£¬ĞèÒªÁ½¸öÖÜÆÚ
-						when 2 => sda_out_r <= '0'; 	--SDAÀ­µÍµ½SCLÀ­µÍ£¬±£³Ö4.0usÒÔÉÏ
-						when 3 => sda_out_r <= '0'; 	--clk_400khzÃ¿¸öÖÜÆÚ2.5us£¬ĞèÒªÁ½¸öÖÜÆÚ
-						when 4 => scl_out_r <= '0'; 	--SCLÀ­µÍ£¬±£³Ö4.7usÒÔÉÏ
-						when 5 => scl_out_r <= '0'; state <= MAIN; 	--clk_400khzÃ¿¸öÖÜÆÚ2.5us£¬ĞèÒªÁ½¸öÖÜÆÚ£¬·µ»ØMAIN
-						when others => state <= IDLE;	--Èç¹û³ÌĞòÊ§¿Ø£¬½øÈëIDLE×Ô¸´Î»×´Ì¬
+						when 0 => sda_out_r <= '1'; scl_out_r <= '1';	--å°†SCLå’ŒSDAæ‹‰é«˜ï¼Œä¿æŒ4.7usä»¥ä¸Š
+						when 1 => sda_out_r <= '1'; scl_out_r <= '1'; 	--clk_400khzæ¯ä¸ªå‘¨æœŸ2.5usï¼Œéœ€è¦ä¸¤ä¸ªå‘¨æœŸ
+						when 2 => sda_out_r <= '0'; 	--SDAæ‹‰ä½åˆ°SCLæ‹‰ä½ï¼Œä¿æŒ4.0usä»¥ä¸Š
+						when 3 => sda_out_r <= '0'; 	--clk_400khzæ¯ä¸ªå‘¨æœŸ2.5usï¼Œéœ€è¦ä¸¤ä¸ªå‘¨æœŸ
+						when 4 => scl_out_r <= '0'; 	--SCLæ‹‰ä½ï¼Œä¿æŒ4.7usä»¥ä¸Š
+						when 5 => scl_out_r <= '0'; state <= MAIN; 	--clk_400khzæ¯ä¸ªå‘¨æœŸ2.5usï¼Œéœ€è¦ä¸¤ä¸ªå‘¨æœŸï¼Œè¿”å›MAIN
+						when others => state <= IDLE;	--å¦‚æœç¨‹åºå¤±æ§ï¼Œè¿›å…¥IDLEè‡ªå¤ä½çŠ¶æ€
 					end case;
 				when WRITING =>
-					if(cnt <= 6) then	--¹²ĞèÒª·¢ËÍ8bitµÄÊı¾İ£¬ÕâÀï¿ØÖÆÑ­»·µÄ´ÎÊı
+					if(cnt <= 6) then	--å…±éœ€è¦å‘é€8bitçš„æ•°æ®ï¼Œè¿™é‡Œæ§åˆ¶å¾ªç¯çš„æ¬¡æ•°
 						if(cnt_write >= 3) then
 							cnt_write <= 0; 
 							cnt <= cnt + 1; 
@@ -229,32 +224,32 @@ begin
 					else 
 						if(cnt_write >= 7) then 
 							cnt_write <= 0; 
-							cnt <= 0; 	--Á½¸ö±äÁ¿¶¼»Ö¸´³õÖµ
+							cnt <= 0; 	--ä¸¤ä¸ªå˜é‡éƒ½æ¢å¤åˆå€¼
 						else 
 							cnt_write <= cnt_write + 1; 
 							cnt <= cnt; 
 						end if;
 					end if;
 					case(cnt_write) is
-						--°´ÕÕI2CµÄÊ±Ğò´«ÊäÊı¾İ
-						when 0 => scl_out_r <= '0'; sda_out_r <= data_wr(7-cnt); 	--SCLÀ­µÍ£¬²¢¿ØÖÆSDAÊä³ö¶ÔÓ¦µÄÎ»
-						when 1 => scl_out_r <= '1'; 	--SCLÀ­¸ß£¬±£³Ö4.0usÒÔÉÏ
-						when 2 => scl_out_r <= '1'; 	--clk_400khzÃ¿¸öÖÜÆÚ2.5us£¬ĞèÒªÁ½¸öÖÜÆÚ
-						when 3 => scl_out_r <= '0'; 	--SCLÀ­µÍ£¬×¼±¸·¢ËÍÏÂ1bitµÄÊı¾İ
-					    --»ñÈ¡´ÓÉè±¸µÄÏìÓ¦ĞÅºÅ²¢ÅĞ¶Ï
-						when 4 => sda_out_r <= 'Z'; 	--ÊÍ·ÅSDAÏß£¬×¼±¸½ÓÊÕ´ÓÉè±¸µÄÏìÓ¦ĞÅºÅ
-						when 5 => scl_out_r <= '1'; 	--SCLÀ­¸ß£¬±£³Ö4.0usÒÔÉÏ
+						--æŒ‰ç…§I2Cçš„æ—¶åºä¼ è¾“æ•°æ®
+						when 0 => scl_out_r <= '0'; sda_out_r <= data_wr(7-cnt); 	--SCLæ‹‰ä½ï¼Œå¹¶æ§åˆ¶SDAè¾“å‡ºå¯¹åº”çš„ä½
+						when 1 => scl_out_r <= '1'; 	--SCLæ‹‰é«˜ï¼Œä¿æŒ4.0usä»¥ä¸Š
+						when 2 => scl_out_r <= '1'; 	--clk_400khzæ¯ä¸ªå‘¨æœŸ2.5usï¼Œéœ€è¦ä¸¤ä¸ªå‘¨æœŸ
+						when 3 => scl_out_r <= '0'; 	--SCLæ‹‰ä½ï¼Œå‡†å¤‡å‘é€ä¸‹1bitçš„æ•°æ®
+					    --è·å–ä»è®¾å¤‡çš„å“åº”ä¿¡å·å¹¶åˆ¤æ–­
+						when 4 => sda_out_r <= 'Z'; 	--é‡Šæ”¾SDAçº¿ï¼Œå‡†å¤‡æ¥æ”¶ä»è®¾å¤‡çš„å“åº”ä¿¡å·
+						when 5 => scl_out_r <= '1'; 	--SCLæ‹‰é«˜ï¼Œä¿æŒ4.0usä»¥ä¸Š
 						when 6 => 
 							if(sda_out = '1') then 
 								state <= IDLE; 
 							else 
 								state <= state; 
-							end if; 	--»ñÈ¡´ÓÉè±¸µÄÏìÓ¦ĞÅºÅ²¢ÅĞ¶Ï
-						when 7 => scl_out_r <= '0'; state <= MAIN; 	--SCLÀ­µÍ£¬·µ»ØMAIN×´Ì¬
-						when others => state <= IDLE;	--Èç¹û³ÌĞòÊ§¿Ø£¬½øÈëIDLE×Ô¸´Î»×´Ì¬
+							end if; 	--è·å–ä»è®¾å¤‡çš„å“åº”ä¿¡å·å¹¶åˆ¤æ–­
+						when 7 => scl_out_r <= '0'; state <= MAIN; 	--SCLæ‹‰ä½ï¼Œè¿”å›MAINçŠ¶æ€
+						when others => state <= IDLE;	--å¦‚æœç¨‹åºå¤±æ§ï¼Œè¿›å…¥IDLEè‡ªå¤ä½çŠ¶æ€
 					end case;
-				when READING =>  --I2CÍ¨ĞÅÊ±ĞòÖĞµÄ¶Á²Ù×÷READºÍ·µ»ØACKµÄ²Ù×÷
-					if(cnt <= 6) then	--¹²ĞèÒª½ÓÊÕ8bitµÄÊı¾İ£¬ÕâÀï¿ØÖÆÑ­»·µÄ´ÎÊı
+				when READING =>  --I2Cé€šä¿¡æ—¶åºä¸­çš„è¯»æ“ä½œREADå’Œè¿”å›ACKçš„æ“ä½œ
+					if(cnt <= 6) then	--å…±éœ€è¦æ¥æ”¶8bitçš„æ•°æ®ï¼Œè¿™é‡Œæ§åˆ¶å¾ªç¯çš„æ¬¡æ•°
 						if(cnt_read >= 3) then
 							cnt_read <= 0; 
 							cnt <= cnt + 1; 
@@ -265,39 +260,39 @@ begin
 					else 
 						if(cnt_read >= 7) then
 							cnt_read <= 0; 
-							cnt <= 0; 	--Á½¸ö±äÁ¿¶¼»Ö¸´³õÖµ
+							cnt <= 0; 	--ä¸¤ä¸ªå˜é‡éƒ½æ¢å¤åˆå€¼
 						else 
 							cnt_read <= cnt_read + 1;
 							cnt <= cnt; 
 						end if;
 					end if;
 					case(cnt_read) is
-						--°´ÕÕI2CµÄÊ±Ğò½ÓÊÕÊı¾İ
-						when 0 => scl_out_r <= '0'; sda_out_r <= 'Z'; 	--SCLÀ­µÍ£¬ÊÍ·ÅSDAÏß£¬×¼±¸½ÓÊÕ´ÓÉè±¸Êı¾İ
-						when 1 => scl_out_r <= '1'; 	--SCLÀ­¸ß£¬±£³Ö4.0usÒÔÉÏ
-						when 2 => adc_data_r(7-cnt) <= sda_out; 	--¶ÁÈ¡´ÓÉè±¸·µ»ØµÄÊı¾İ
-						when 3 => scl_out_r <= '0'; 	--SCLÀ­µÍ£¬×¼±¸½ÓÊÕÏÂ1bitµÄÊı¾İ
-						--Ïò´ÓÉè±¸·¢ËÍÏìÓ¦ĞÅºÅ
-						when 4 => sda_out_r <= '0'; adc_done <= '1'; adc_data <= adc_data_r; 	--·¢ËÍÏìÓ¦ĞÅºÅ£¬½«Ç°Ãæ½ÓÊÕµÄÊı¾İËø´æ
-						when 5 => scl_out_r <= '1'; 	--SCLÀ­¸ß£¬±£³Ö4.0usÒÔÉÏ
-						when 6 => scl_out_r <= '1'; adc_done <= '0'; 	--SCLÀ­¸ß£¬±£³Ö4.0usÒÔÉÏ
-						when 7 => scl_out_r <= '0'; state <= MAIN; 	--SCLÀ­µÍ£¬·µ»ØMAIN×´Ì¬
-						when others => state <= IDLE;	--Èç¹û³ÌĞòÊ§¿Ø£¬½øÈëIDLE×Ô¸´Î»×´Ì¬
+						--æŒ‰ç…§I2Cçš„æ—¶åºæ¥æ”¶æ•°æ®
+						when 0 => scl_out_r <= '0'; sda_out_r <= 'Z'; 	--SCLæ‹‰ä½ï¼Œé‡Šæ”¾SDAçº¿ï¼Œå‡†å¤‡æ¥æ”¶ä»è®¾å¤‡æ•°æ®
+						when 1 => scl_out_r <= '1'; 	--SCLæ‹‰é«˜ï¼Œä¿æŒ4.0usä»¥ä¸Š
+						when 2 => adc_data_r(7-cnt) <= sda_out; 	--è¯»å–ä»è®¾å¤‡è¿”å›çš„æ•°æ®
+						when 3 => scl_out_r <= '0'; 	--SCLæ‹‰ä½ï¼Œå‡†å¤‡æ¥æ”¶ä¸‹1bitçš„æ•°æ®
+						--å‘ä»è®¾å¤‡å‘é€å“åº”ä¿¡å·
+						when 4 => sda_out_r <= '0'; adc_done <= '1'; adc_data <= adc_data_r; 	--å‘é€å“åº”ä¿¡å·ï¼Œå°†å‰é¢æ¥æ”¶çš„æ•°æ®é”å­˜
+						when 5 => scl_out_r <= '1'; 	--SCLæ‹‰é«˜ï¼Œä¿æŒ4.0usä»¥ä¸Š
+						when 6 => scl_out_r <= '1'; adc_done <= '0'; 	--SCLæ‹‰é«˜ï¼Œä¿æŒ4.0usä»¥ä¸Š
+						when 7 => scl_out_r <= '0'; state <= MAIN; 	--SCLæ‹‰ä½ï¼Œè¿”å›MAINçŠ¶æ€
+						when others => state <= IDLE;	--å¦‚æœç¨‹åºå¤±æ§ï¼Œè¿›å…¥IDLEè‡ªå¤ä½çŠ¶æ€
 					end case;
-				when STOP => --I2CÍ¨ĞÅÊ±ĞòÖĞµÄ½áÊøSTOP
+				when STOP => --I2Cé€šä¿¡æ—¶åºä¸­çš„ç»“æŸSTOP
 					if(cnt_stop >= 5) then
-						cnt_stop <= 0;	--¶ÔSTOPÖĞµÄ×Ó×´Ì¬Ö´ĞĞ¿ØÖÆcnt_stop
+						cnt_stop <= 0;	--å¯¹STOPä¸­çš„å­çŠ¶æ€æ‰§è¡Œæ§åˆ¶cnt_stop
 					else 
 						cnt_stop <= cnt_stop + 1;
 					end if;
 					case(cnt_stop) is
-						when 0 => sda_out_r <= '0'; 	--SDAÀ­µÍ£¬×¼±¸STOP
-						when 1 => sda_out_r <= '0'; 	--SDAÀ­µÍ£¬×¼±¸STOP
-						when 2 => scl_out_r <= '1'; 	--SCLÌáÇ°SDAÀ­¸ß4.0us
-						when 3 => scl_out_r <= '1'; 	--SCLÌáÇ°SDAÀ­¸ß4.0us
-						when 4 => sda_out_r <= '1'; 	--SDAÀ­¸ß
-						when 5 => sda_out_r <= '1'; state <= MAIN; 	--Íê³ÉSTOP²Ù×÷£¬·µ»ØMAIN×´Ì¬
-						when others => state <= IDLE;	--Èç¹û³ÌĞòÊ§¿Ø£¬½øÈëIDLE×Ô¸´Î»×´Ì¬
+						when 0 => sda_out_r <= '0'; 	--SDAæ‹‰ä½ï¼Œå‡†å¤‡STOP
+						when 1 => sda_out_r <= '0'; 	--SDAæ‹‰ä½ï¼Œå‡†å¤‡STOP
+						when 2 => scl_out_r <= '1'; 	--SCLæå‰SDAæ‹‰é«˜4.0us
+						when 3 => scl_out_r <= '1'; 	--SCLæå‰SDAæ‹‰é«˜4.0us
+						when 4 => sda_out_r <= '1'; 	--SDAæ‹‰é«˜
+						when 5 => sda_out_r <= '1'; state <= MAIN; 	--å®ŒæˆSTOPæ“ä½œï¼Œè¿”å›MAINçŠ¶æ€
+						when others => state <= IDLE;	--å¦‚æœç¨‹åºå¤±æ§ï¼Œè¿›å…¥IDLEè‡ªå¤ä½çŠ¶æ€
 					end case;
 				when others => state <= IDLE;
 			end case;
@@ -318,7 +313,7 @@ begin
         binx := binx(6 downto 0) & '0' ; 
     end loop ;
 
-    DataOut(2) <= conv_integer(bcd(11 downto 8));                     		--Êä³ö BCD Âë
+    DataOut(2) <= conv_integer(bcd(11 downto 8));                     		--è¾“å‡º BCD ç 
 	DataOut(1) <= conv_integer(bcd(7  downto 4));
     DataOut(0) <= conv_integer(bcd(3  downto 0));
 ----------------bcd2Vol-----------------------------
@@ -453,7 +448,7 @@ begin
 		ctrlcode595(95 downto 88)<=enDig(5);--6
 		
 		
-			--divide ctrl code into 6 parts
+--divide ctrl code into 6 parts
 	codeP0 <= ctrlcode595(15 downto 0);
 	codeP1 <= ctrlcode595(31 downto 16);
 	codeP2 <= ctrlcode595(47 downto 32);
